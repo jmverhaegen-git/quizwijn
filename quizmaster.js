@@ -2,40 +2,43 @@ import { db } from "./firebase.js";
 import { ref, set, update, onValue, get, remove } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const optionId = document.getElementById("optionId"), 
-      optionInput = document.getElementById("optionInput"),
-      saveOptionBtn = document.getElementById("saveOptionBtn"), 
-      optionListDisplay = document.getElementById("optionListDisplay"),
-      bulkOptionInput = document.getElementById("bulkOptionInput"),
-      bulkSaveBtn = document.getElementById("bulkSaveBtn"),
-      exportBtn = document.getElementById("exportBtn"),
-      importFileBtn = document.getElementById("importFileBtn"),
-      fileInput = document.getElementById("fileInput"),
-      masterGrapeSelect = document.getElementById("masterGrapeSelect"), 
-      wineNameInput = document.getElementById("wineNameInput"),
-      wineYearInput = document.getElementById("wineYearInput"), 
-      wineNoteInput = document.getElementById("wineNoteInput"),
-      addWineBtn = document.getElementById("addWineBtn"), 
-      wineListDisplay = document.getElementById("wineListDisplay"),
-      currentWineNumber = document.getElementById("currentWineNumber"), 
-      quizStatusText = document.getElementById("quizStatusText"),
-      nextWineBtn = document.getElementById("nextWineBtn"), 
-      prevWineBtn = document.getElementById("prevWineBtn"),
-      calcBtn = document.getElementById("calcBtn"), 
-      tempScoreBtn = document.getElementById("tempScoreBtn"),
-      scoreTable = document.getElementById("scoreTable");
+// Elementen koppelen
+const optionId = document.getElementById("optionId");
+const optionInput = document.getElementById("optionInput");
+const saveOptionBtn = document.getElementById("saveOptionBtn");
+const optionListDisplay = document.getElementById("optionListDisplay");
+const bulkOptionInput = document.getElementById("bulkOptionInput");
+const bulkSaveBtn = document.getElementById("bulkSaveBtn");
+const exportBtn = document.getElementById("exportBtn");
+const importFileBtn = document.getElementById("importFileBtn");
+const fileInput = document.getElementById("fileInput");
 
-// --- 1. DROPDOWN BEHEER (WIJZIGEN & VERWIJDEREN) ---
-saveOptionBtn.onclick = async () => {
+const masterGrapeSelect = document.getElementById("masterGrapeSelect");
+const wineNameInput = document.getElementById("wineNameInput");
+const wineYearInput = document.getElementById("wineYearInput");
+const wineNoteInput = document.getElementById("wineNoteInput");
+const addWineBtn = document.getElementById("addWineBtn");
+const wineListDisplay = document.getElementById("wineListDisplay");
+
+const currentWineNumber = document.getElementById("currentWineNumber");
+const quizStatusText = document.getElementById("quizStatusText");
+const nextWineBtn = document.getElementById("nextWineBtn");
+const prevWineBtn = document.getElementById("prevWineBtn");
+const calcBtn = document.getElementById("calcBtn");
+const tempScoreBtn = document.getElementById("tempScoreBtn");
+const scoreTable = document.getElementById("scoreTable");
+
+// --- 1. DROPDOWN BEHEER (ENKELE INVOER) ---
+saveOptionBtn.addEventListener('click', async () => {
     const name = optionInput.value.trim();
     const id = optionId.value;
     if (!name) return alert("Vul een naam in");
 
-    // Controleer op dubbelen (behalve als we de huidige optie bewerken)
     const snap = await get(ref(db, "dropdownOptions"));
     const existing = snap.exists() ? Object.entries(snap.val()) : [];
+    
+    // Dubbel check (behalve als we de huidige ID bewerken)
     const isDuplicate = existing.some(([key, val]) => val.name.toLowerCase() === name.toLowerCase() && key !== id);
-
     if (isDuplicate) return alert("Deze druivensoort bestaat al.");
 
     if (id) {
@@ -43,12 +46,17 @@ saveOptionBtn.onclick = async () => {
     } else {
         await set(ref(db, `dropdownOptions/${Date.now()}`), { name });
     }
-    optionInput.value = ""; optionId.value = "";
+    
+    optionInput.value = ""; 
+    optionId.value = "";
     saveOptionBtn.textContent = "Optie Opslaan / Wijzigen";
-};
+});
 
-// --- BULK & IMPORT LOGICA (ZONDER DUBBELEN) ---
+// --- BULK & IMPORT LOGICA ---
 async function verwerkBulk(tekst) {
+    if (!tekst) return alert("Geen tekst gevonden.");
+    
+    // Split op komma of nieuwe regel
     const items = tekst.split(/[,\n]/).map(s => s.trim()).filter(s => s.length > 0);
     if (items.length === 0) return alert("Geen geldige soorten gevonden.");
 
@@ -60,18 +68,18 @@ async function verwerkBulk(tekst) {
         if (!existingNames.includes(name.toLowerCase())) {
             const tempId = Date.now() + Math.floor(Math.random() * 1000);
             await set(ref(db, `dropdownOptions/${tempId}`), { name });
-            existingNames.push(name.toLowerCase()); // Voorkom dubbelen binnen dezelfde bulk
+            existingNames.push(name.toLowerCase());
             addedCount++;
         }
     }
-    alert(`${addedCount} nieuwe soort(en) toegevoegd. Dubbelen zijn overgeslagen.`);
+    alert(`${addedCount} nieuwe soort(en) toegevoegd. Dubbelen zijn genegeerd.`);
     bulkOptionInput.value = "";
 }
 
-bulkSaveBtn.onclick = () => verwerkBulk(bulkOptionInput.value);
+bulkSaveBtn.addEventListener('click', () => verwerkBulk(bulkOptionInput.value));
 
-// EXPORT NAAR TEKSTBESTAND
-exportBtn.onclick = async () => {
+// EXPORT
+exportBtn.addEventListener('click', async () => {
     const snap = await get(ref(db, "dropdownOptions"));
     if (!snap.exists()) return alert("Geen data om te exporteren.");
     const names = Object.values(snap.val()).map(o => o.name).sort().join("\n");
@@ -79,21 +87,22 @@ exportBtn.onclick = async () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "wijnsoorten_lijst.txt";
+    a.download = "druivensoorten_export.txt";
     a.click();
-};
+});
 
-// IMPORT VIA BESTAND
-importFileBtn.onclick = () => fileInput.click();
-fileInput.onchange = (e) => {
+// IMPORT
+importFileBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => verwerkBulk(ev.target.result);
     reader.readAsText(file);
     fileInput.value = ""; 
-};
+});
 
+// Real-time lijst tonen
 onValue(ref(db, "dropdownOptions"), snap => {
     const options = snap.val() || {};
     const sortedKeys = Object.keys(options).sort((a,b) => options[a].name.localeCompare(options[b].name));
@@ -104,8 +113,8 @@ onValue(ref(db, "dropdownOptions"), snap => {
         html += `<li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; border-bottom:1px solid #eee; padding-bottom:3px;">
             <span>${n}</span>
             <div>
-                <button onclick="editOption('${k}','${n}')" style="width:auto; padding:2px 8px; margin:0 2px; font-size:0.8em; background:#6c757d;">✏️</button> 
-                <button onclick="deleteOption('${k}','${n}')" style="width:auto; padding:2px 8px; margin:0 2px; font-size:0.8em; background:red;">🗑️</button>
+                <button onclick="editOption('${k}','${n}')" style="width:auto; padding:2px 8px; font-size:0.8em; background:#6c757d;">✏️</button> 
+                <button onclick="deleteOption('${k}','${n}')" style="width:auto; padding:2px 8px; font-size:0.8em; background:red;">🗑️</button>
             </div>
         </li>`;
     });
@@ -116,36 +125,37 @@ onValue(ref(db, "dropdownOptions"), snap => {
         sortedValues.map(o => `<option value="${o.name}">${o.name}</option>`).join("");
 });
 
+// Globale functies voor knoppen in de lijst
 window.editOption = (id, name) => {
-    optionId.value = id; optionInput.value = name;
+    optionId.value = id; 
+    optionInput.value = name;
     saveOptionBtn.textContent = "Wijziging Opslaan";
 };
 
 window.deleteOption = async (id, name) => {
     const winesSnap = await get(ref(db, "wines"));
     const isUsed = Object.values(winesSnap.val() || {}).some(w => w.grape === name);
-    if (isUsed) return alert("Kan niet verwijderen: deze soort wordt momenteel gebruikt in een wijnronde.");
-    if (confirm(`'${name}' verwijderen uit de lijst?`)) await remove(ref(db, `dropdownOptions/${id}`));
+    if (isUsed) return alert("Kan niet verwijderen: deze soort wordt gebruikt in een ronde.");
+    if (confirm(`'${name}' verwijderen?`)) await remove(ref(db, `dropdownOptions/${id}`));
 };
 
 // --- 2. WIJN RONDES ---
-addWineBtn.onclick = async () => {
+addWineBtn.addEventListener('click', async () => {
     const finalName = wineNameInput.value.trim() || masterGrapeSelect.value;
     const year = parseInt(wineYearInput.value);
     if (!finalName || !year) return alert("Naam en jaar verplicht");
 
-    // Ook hier dubbel-check voor dropdownOptions als er getypt wordt
-    if (wineNameInput.value.trim()) {
-        const check = await get(ref(db, "dropdownOptions"));
-        const exists = Object.values(check.val() || {}).some(o => o.name.toLowerCase() === finalName.toLowerCase());
-        if (!exists) await set(ref(db, `dropdownOptions/${Date.now()}`), { name: finalName });
-    }
+    // Automatisch toevoegen aan dropdown als het een nieuwe naam is
+    const check = await get(ref(db, "dropdownOptions"));
+    const exists = Object.values(check.val() || {}).some(o => o.name.toLowerCase() === finalName.toLowerCase());
+    if (!exists) await set(ref(db, `dropdownOptions/${Date.now()}`), { name: finalName });
 
     const snap = await get(ref(db, "wines"));
     const idx = snap.exists() ? Math.max(...Object.keys(snap.val()).map(Number)) + 1 : 1;
     await set(ref(db, `wines/${idx}`), { grape: finalName, year, notes: wineNoteInput.value });
+    
     wineNameInput.value = ""; wineYearInput.value = ""; wineNoteInput.value = "";
-};
+});
 
 onValue(ref(db, "wines"), snap => {
     const wines = snap.val() || {};
@@ -154,7 +164,7 @@ onValue(ref(db, "wines"), snap => {
     wineListDisplay.innerHTML = html + "</table>";
 });
 
-// --- 3. BESTURING ---
+// --- 3. LIVE BESTURING ---
 nextWineBtn.onclick = async () => {
     const snap = await get(ref(db, "settings/currentWine"));
     const next = (snap.val() || 0) + 1;
