@@ -1,0 +1,16 @@
+h1, h2 {
+    color: #5A0F0F;
+}
+
+label {
+    font-weight: bold;
+    margin-top: 10px;
+    display: block;
+}
+
+#scoreValue {
+    font-size: 1.4em;
+    text-align: center;
+    color: #5A0F0F;
+    font-weight: bold;
+}
