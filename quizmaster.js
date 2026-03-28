@@ -2,17 +2,30 @@ import { db } from "./firebase.js";
 import { ref, set, update, onValue, get, remove } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const optionId = document.getElementById("optionId"), optionInput = document.getElementById("optionInput"),
-      saveOptionBtn = document.getElementById("saveOptionBtn"), optionListDisplay = document.getElementById("optionListDisplay"),
-      masterGrapeSelect = document.getElementById("masterGrapeSelect"), wineNameInput = document.getElementById("wineNameInput"),
-      wineYearInput = document.getElementById("wineYearInput"), wineNoteInput = document.getElementById("wineNoteInput"),
-      addWineBtn = document.getElementById("addWineBtn"), wineListDisplay = document.getElementById("wineListDisplay"),
-      currentWineNumber = document.getElementById("currentWineNumber"), quizStatusText = document.getElementById("quizStatusText"),
-      nextWineBtn = document.getElementById("nextWineBtn"), prevWineBtn = document.getElementById("prevWineBtn"),
-      calcBtn = document.getElementById("calcBtn"), tempScoreBtn = document.getElementById("tempScoreBtn"),
+const optionId = document.getElementById("optionId"), 
+      optionInput = document.getElementById("optionInput"),
+      saveOptionBtn = document.getElementById("saveOptionBtn"), 
+      optionListDisplay = document.getElementById("optionListDisplay"),
+      bulkOptionInput = document.getElementById("bulkOptionInput"),
+      bulkSaveBtn = document.getElementById("bulkSaveBtn"),
+      exportBtn = document.getElementById("exportBtn"),
+      importFileBtn = document.getElementById("importFileBtn"),
+      fileInput = document.getElementById("fileInput"),
+      masterGrapeSelect = document.getElementById("masterGrapeSelect"), 
+      wineNameInput = document.getElementById("wineNameInput"),
+      wineYearInput = document.getElementById("wineYearInput"), 
+      wineNoteInput = document.getElementById("wineNoteInput"),
+      addWineBtn = document.getElementById("addWineBtn"), 
+      wineListDisplay = document.getElementById("wineListDisplay"),
+      currentWineNumber = document.getElementById("currentWineNumber"), 
+      quizStatusText = document.getElementById("quizStatusText"),
+      nextWineBtn = document.getElementById("nextWineBtn"), 
+      prevWineBtn = document.getElementById("prevWineBtn"),
+      calcBtn = document.getElementById("calcBtn"), 
+      tempScoreBtn = document.getElementById("tempScoreBtn"),
       scoreTable = document.getElementById("scoreTable");
 
-// --- 1 & 2. DROPDOWN BEHEER (WIJZIGEN & VERWIJDEREN) ---
+// --- 1. DROPDOWN BEHEER (WIJZIGEN & VERWIJDEREN) ---
 saveOptionBtn.onclick = async () => {
     const name = optionInput.value.trim();
     const id = optionId.value;
@@ -25,6 +38,52 @@ saveOptionBtn.onclick = async () => {
     }
     optionInput.value = ""; optionId.value = "";
     saveOptionBtn.textContent = "Optie Opslaan / Wijzigen";
+};
+
+// --- BULK LOGICA ---
+async function verwerkBulk(tekst) {
+    const items = tekst.split(/[,\n]/).map(s => s.trim()).filter(s => s.length > 0);
+    if (items.length === 0) return alert("Geen geldige soorten gevonden.");
+
+    const snap = await get(ref(db, "dropdownOptions"));
+    const existingOptions = snap.exists() ? Object.values(snap.val()).map(o => o.name.toLowerCase()) : [];
+
+    let addedCount = 0;
+    for (const name of items) {
+        if (!existingOptions.includes(name.toLowerCase())) {
+            const tempId = Date.now() + Math.floor(Math.random() * 1000);
+            await set(ref(db, `dropdownOptions/${tempId}`), { name });
+            existingOptions.push(name.toLowerCase());
+            addedCount++;
+        }
+    }
+    alert(`${addedCount} nieuwe soort(en) toegevoegd.`);
+}
+
+bulkSaveBtn.onclick = () => verwerkBulk(bulkOptionInput.value);
+
+// EXPORT
+exportBtn.onclick = async () => {
+    const snap = await get(ref(db, "dropdownOptions"));
+    if (!snap.exists()) return alert("Geen data om te exporteren.");
+    const names = Object.values(snap.val()).map(o => o.name).sort().join("\n");
+    const blob = new Blob([names], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "wijnsoorten_export.txt";
+    a.click();
+};
+
+// IMPORT VIA BESTAND
+importFileBtn.onclick = () => fileInput.click();
+fileInput.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => verwerkBulk(ev.target.result);
+    reader.readAsText(file);
+    fileInput.value = ""; 
 };
 
 onValue(ref(db, "dropdownOptions"), snap => {
@@ -61,7 +120,7 @@ window.deleteOption = async (id, name) => {
     if (confirm(`'${name}' verwijderen uit de lijst?`)) await remove(ref(db, `dropdownOptions/${id}`));
 };
 
-// --- WIJN RONDES ---
+// --- 2. WIJN RONDES ---
 addWineBtn.onclick = async () => {
     const finalName = wineNameInput.value.trim() || masterGrapeSelect.value;
     const year = parseInt(wineYearInput.value);
@@ -86,7 +145,7 @@ onValue(ref(db, "wines"), snap => {
     wineListDisplay.innerHTML = html + "</table>";
 });
 
-// --- BESTURING ---
+// --- 3. BESTURING ---
 nextWineBtn.onclick = async () => {
     const snap = await get(ref(db, "settings/currentWine"));
     const next = (snap.val() || 0) + 1;
@@ -107,7 +166,7 @@ onValue(ref(db, "settings"), snap => {
     quizStatusText.textContent = s.status || "In afwachting";
 });
 
-// --- SCORE ---
+// --- 4. SCORE ---
 async function bereken(isEinde) {
     if (isEinde) await update(ref(db, "settings"), { status: "finished" });
     const wines = (await get(ref(db, "wines"))).val() || {};

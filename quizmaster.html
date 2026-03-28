@@ -19,6 +19,18 @@
             <input id="optionId" type="hidden">
             <input id="optionInput" type="text" placeholder="Naam wijnsoort/druif">
             <button id="saveOptionBtn">Optie Opslaan / Wijzigen</button>
+            
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            
+            <label>Bulk Invoer / Import</label>
+            <textarea id="bulkOptionInput" placeholder="Typ/plak soorten (komma of nieuwe regel)..." style="width: 100%; height: 80px; padding: 10px; box-sizing: border-box; font-family: inherit;"></textarea>
+            
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <button id="bulkSaveBtn" style="background: #2c3e50; flex: 2;">Bulk Toevoegen</button>
+                <button id="exportBtn" style="background: #6c757d; flex: 1;">Bestand Export</button>
+                <button id="importFileBtn" style="background: #6c757d; flex: 1;">Bestand Import</button>
+                <input type="file" id="fileInput" accept=".txt" style="display: none;">
+            </div>
         </div>
         <div id="optionListDisplay" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 5px;"></div>
     </section>
