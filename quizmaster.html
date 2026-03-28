@@ -18,17 +18,17 @@
         <div class="setup-box">
             <input id="optionId" type="hidden">
             <input id="optionInput" type="text" placeholder="Naam wijnsoort/druif">
-            <button id="saveOptionBtn">Optie Opslaan / Wijzigen</button>
+            <button id="saveOptionBtn" type="button">Optie Opslaan / Wijzigen</button>
             
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
             
             <label>Bulk Invoer / Import</label>
-            <textarea id="bulkOptionInput" placeholder="Typ/plak soorten (komma of nieuwe regel)..." style="width: 100%; height: 80px; padding: 10px; box-sizing: border-box; font-family: inherit;"></textarea>
+            <textarea id="bulkOptionInput" placeholder="Typ of plak soorten (gescheiden door komma of nieuwe regel)..." style="width: 100%; height: 80px; padding: 10px; box-sizing: border-box; font-family: inherit;"></textarea>
             
             <div style="display: flex; gap: 8px; margin-top: 8px;">
-                <button id="bulkSaveBtn" style="background: #2c3e50; flex: 2;">Bulk Toevoegen</button>
-                <button id="exportBtn" style="background: #6c757d; flex: 1;">Bestand Export</button>
-                <button id="importFileBtn" style="background: #6c757d; flex: 1;">Bestand Import</button>
+                <button id="bulkSaveBtn" type="button" style="background: #2c3e50; flex: 2;">Bulk Toevoegen</button>
+                <button id="exportBtn" type="button" style="background: #6c757d; flex: 1;">Bestand Export</button>
+                <button id="importFileBtn" type="button" style="background: #6c757d; flex: 1;">Bestand Import</button>
                 <input type="file" id="fileInput" accept=".txt" style="display: none;">
             </div>
         </div>
@@ -46,9 +46,9 @@
             <input id="wineYearInput" type="number" placeholder="Bijv. 2022">
             
             <label>Opmerkingen</label>
-            <textarea id="wineNoteInput" style="width: 100%; box-sizing: border-box; height: 60px; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 1.1em;"></textarea>
+            <textarea id="wineNoteInput" style="width: 100%; box-sizing: border-box; height: 60px; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; font-family: inherit;"></textarea>
             
-            <button id="addWineBtn">Wijn Opslaan voor Ronde</button>
+            <button id="addWineBtn" type="button">Wijn Opslaan voor Ronde</button>
         </div>
         <div id="wineListDisplay" style="margin-top:15px;"></div>
     </section>
@@ -57,16 +57,16 @@
         <h2>3. Live Besturing</h2>
         <p>Status: <strong id="quizStatusText">-</strong> | Ronde: <strong id="currentWineNumber">0</strong></p>
         <div style="display:flex; gap:10px;">
-            <button id="prevWineBtn" style="background:#6c757d;">⬅️ Vorige</button>
-            <button id="nextWineBtn" style="background:#28a745;">Volgende Vrijgeven ➡️</button>
+            <button id="prevWineBtn" type="button" style="background:#6c757d;">⬅️ Vorige</button>
+            <button id="nextWineBtn" type="button" style="background:#28a745;">Volgende Vrijgeven ➡️</button>
         </div>
     </section>
 
     <section class="card">
         <h2>4. Resultaten</h2>
         <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <button id="tempScoreBtn" style="background:#17a2b8;">Tussenstand</button>
-            <button id="calcBtn" style="background:#5A0F0F;">🏁 Quiz Afsluiten</button>
+            <button id="tempScoreBtn" type="button" style="background:#17a2b8;">Tussenstand</button>
+            <button id="calcBtn" type="button" style="background:#5A0F0F;">🏁 Quiz Afsluiten</button>
         </div>
         <div id="scoreTable"></div>
     </section>
@@ -74,10 +74,10 @@
     <section class="card danger-zone" style="background: #fff5f5; border: 1px solid #feb2b2; margin-top: 30px;">
         <h2>⚠️ Data Beheer (Reset)</h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <button id="resetAnswersBtn" style="font-size: 0.9em; padding: 8px;">Wis Antwoorden</button>
-            <button id="resetParticipantsBtn" style="font-size: 0.9em; padding: 8px;">Wis Deelnemers</button>
-            <button id="resetWinesBtn" style="font-size: 0.9em; padding: 8px;">Wis Wijnrondes</button>
-            <button id="resetOptionsBtn" style="font-size: 0.9em; padding: 8px;">Wis Dropdownlijst</button>
+            <button id="resetAnswersBtn" type="button" style="font-size: 0.9em; padding: 8px;">Wis Antwoorden</button>
+            <button id="resetParticipantsBtn" type="button" style="font-size: 0.9em; padding: 8px;">Wis Deelnemers</button>
+            <button id="resetWinesBtn" type="button" style="font-size: 0.9em; padding: 8px;">Wis Wijnrondes</button>
+            <button id="resetOptionsBtn" type="button" style="font-size: 0.9em; padding: 8px;">Wis Dropdownlijst</button>
         </div>
     </section>
 </div>
