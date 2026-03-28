@@ -31,6 +31,13 @@ saveOptionBtn.onclick = async () => {
     const id = optionId.value;
     if (!name) return alert("Vul een naam in");
 
+    // Controleer op dubbelen (behalve als we de huidige optie bewerken)
+    const snap = await get(ref(db, "dropdownOptions"));
+    const existing = snap.exists() ? Object.entries(snap.val()) : [];
+    const isDuplicate = existing.some(([key, val]) => val.name.toLowerCase() === name.toLowerCase() && key !== id);
+
+    if (isDuplicate) return alert("Deze druivensoort bestaat al.");
+
     if (id) {
         await update(ref(db, `dropdownOptions/${id}`), { name });
     } else {
@@ -40,29 +47,30 @@ saveOptionBtn.onclick = async () => {
     saveOptionBtn.textContent = "Optie Opslaan / Wijzigen";
 };
 
-// --- BULK LOGICA ---
+// --- BULK & IMPORT LOGICA (ZONDER DUBBELEN) ---
 async function verwerkBulk(tekst) {
     const items = tekst.split(/[,\n]/).map(s => s.trim()).filter(s => s.length > 0);
     if (items.length === 0) return alert("Geen geldige soorten gevonden.");
 
     const snap = await get(ref(db, "dropdownOptions"));
-    const existingOptions = snap.exists() ? Object.values(snap.val()).map(o => o.name.toLowerCase()) : [];
+    let existingNames = snap.exists() ? Object.values(snap.val()).map(o => o.name.toLowerCase()) : [];
 
     let addedCount = 0;
     for (const name of items) {
-        if (!existingOptions.includes(name.toLowerCase())) {
+        if (!existingNames.includes(name.toLowerCase())) {
             const tempId = Date.now() + Math.floor(Math.random() * 1000);
             await set(ref(db, `dropdownOptions/${tempId}`), { name });
-            existingOptions.push(name.toLowerCase());
+            existingNames.push(name.toLowerCase()); // Voorkom dubbelen binnen dezelfde bulk
             addedCount++;
         }
     }
-    alert(`${addedCount} nieuwe soort(en) toegevoegd.`);
+    alert(`${addedCount} nieuwe soort(en) toegevoegd. Dubbelen zijn overgeslagen.`);
+    bulkOptionInput.value = "";
 }
 
 bulkSaveBtn.onclick = () => verwerkBulk(bulkOptionInput.value);
 
-// EXPORT
+// EXPORT NAAR TEKSTBESTAND
 exportBtn.onclick = async () => {
     const snap = await get(ref(db, "dropdownOptions"));
     if (!snap.exists()) return alert("Geen data om te exporteren.");
@@ -71,7 +79,7 @@ exportBtn.onclick = async () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "wijnsoorten_export.txt";
+    a.download = "wijnsoorten_lijst.txt";
     a.click();
 };
 
@@ -126,9 +134,10 @@ addWineBtn.onclick = async () => {
     const year = parseInt(wineYearInput.value);
     if (!finalName || !year) return alert("Naam en jaar verplicht");
 
+    // Ook hier dubbel-check voor dropdownOptions als er getypt wordt
     if (wineNameInput.value.trim()) {
         const check = await get(ref(db, "dropdownOptions"));
-        const exists = Object.values(check.val() || {}).some(o => o.name === finalName);
+        const exists = Object.values(check.val() || {}).some(o => o.name.toLowerCase() === finalName.toLowerCase());
         if (!exists) await set(ref(db, `dropdownOptions/${Date.now()}`), { name: finalName });
     }
 
