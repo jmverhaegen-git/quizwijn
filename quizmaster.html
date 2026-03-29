@@ -8,6 +8,25 @@
     <link rel="stylesheet" href="ui-theme.css">
     <script type="module" src="firebase.js"></script>
     <script type="module" src="quizmaster.js"></script>
+    <style>
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .list-item-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .btn-small {
+            width: auto !important;
+            padding: 4px 8px !important;
+            margin: 0 !important;
+            font-size: 0.8em !important;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -22,13 +41,13 @@
             
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
             
-            <label>Bulk Invoer / Import</label>
-            <textarea id="bulkOptionInput" placeholder="Typ/plak soorten (komma of nieuwe regel)..." style="width: 100%; height: 80px; padding: 10px; box-sizing: border-box; font-family: inherit;"></textarea>
+            <label>Bulk Invoer</label>
+            <textarea id="bulkOptionInput" placeholder="Typ soorten (komma of nieuwe regel)..." style="width: 100%; height: 80px; padding: 10px; box-sizing: border-box; font-family: inherit;"></textarea>
             
             <div style="display: flex; gap: 8px; margin-top: 8px;">
                 <button id="bulkSaveBtn" type="button" style="background: #2c3e50; flex: 2;">Bulk Toevoegen</button>
-                <button id="exportBtn" type="button" style="background: #6c757d; flex: 1;">Bestand Export</button>
-                <button id="importFileBtn" type="button" style="background: #6c757d; flex: 1;">Bestand Import</button>
+                <button id="exportBtn" type="button" style="background: #6c757d; flex: 1;">Export</button>
+                <button id="importFileBtn" type="button" style="background: #6c757d; flex: 1;">Import</button>
                 <input type="file" id="fileInput" accept=".txt" style="display: none;">
             </div>
         </div>
@@ -74,10 +93,10 @@
     <section class="card danger-zone" style="background: #fff5f5; border: 1px solid #feb2b2; margin-top: 30px;">
         <h2>⚠️ Data Beheer (Reset)</h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <button id="resetAnswersBtn" type="button" style="font-size: 0.9em; padding: 8px;">Wis Antwoorden</button>
-            <button id="resetParticipantsBtn" type="button" style="font-size: 0.9em; padding: 8px;">Wis Deelnemers</button>
-            <button id="resetWinesBtn" type="button" style="font-size: 0.9em; padding: 8px;">Wis Wijnrondes</button>
-            <button id="resetOptionsBtn" type="button" style="font-size: 0.9em; padding: 8px;">Wis Dropdownlijst</button>
+            <button id="resetAnswersBtn" type="button">Wis Antwoorden</button>
+            <button id="resetParticipantsBtn" type="button">Wis Deelnemers</button>
+            <button id="resetWinesBtn" type="button">Wis Wijnrondes</button>
+            <button id="resetOptionsBtn" type="button">Wis Dropdownlijst</button>
         </div>
     </section>
 </div>
