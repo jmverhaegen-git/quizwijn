@@ -6,8 +6,7 @@
     <title>Quizmaster Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="ui-theme.css">
-    <script type="module" src="firebase.js"></script>
-    <script type="module" src="quizmaster.js"></script>
+    
     <style>
         .list-item {
             display: flex;
@@ -15,6 +14,10 @@
             align-items: center;
             padding: 8px;
             border-bottom: 1px solid #eee;
+            background: #fff;
+        }
+        .list-item:hover {
+            background: #f9f9f9;
         }
         .list-item-buttons {
             display: flex;
@@ -24,9 +27,43 @@
             width: auto !important;
             padding: 4px 8px !important;
             margin: 0 !important;
-            font-size: 0.8em !important;
+            font-size: 0.85em !important;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .setup-box {
+            background: #fdfdfd;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+        .card {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            background: white;
+        }
+        .highlight {
+            border: 2px solid #5A0F0F;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
         }
     </style>
+
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="quizmaster.js"></script>
 </head>
 <body>
 <div class="container">
@@ -35,14 +72,15 @@
     <section class="card">
         <h2>1. Beheer Dropdown-lijst</h2>
         <div class="setup-box">
+            <label>Nieuwe Druif/Soort Toevoegen</label>
             <input id="optionId" type="hidden">
             <input id="optionInput" type="text" placeholder="Naam wijnsoort/druif">
             <button id="saveOptionBtn" type="button">Optie Opslaan / Wijzigen</button>
             
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
             
-            <label>Bulk Invoer</label>
-            <textarea id="bulkOptionInput" placeholder="Typ soorten (komma of nieuwe regel)..." style="width: 100%; height: 80px; padding: 10px; box-sizing: border-box; font-family: inherit;"></textarea>
+            <label>Bulk Invoer (Snel toevoegen)</label>
+            <textarea id="bulkOptionInput" placeholder="Typ soorten (scheid met komma of nieuwe regel)..." style="width: 100%; height: 80px; padding: 10px; box-sizing: border-box; font-family: inherit; border: 1px solid #ccc; border-radius: 4px;"></textarea>
             
             <div style="display: flex; gap: 8px; margin-top: 8px;">
                 <button id="bulkSaveBtn" type="button" style="background: #2c3e50; flex: 2;">Bulk Toevoegen</button>
@@ -51,52 +89,63 @@
                 <input type="file" id="fileInput" accept=".txt" style="display: none;">
             </div>
         </div>
-        <div id="optionListDisplay" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 5px;"></div>
+        
+        <label style="margin-top: 15px;">Huidige lijst (Alfabetisch):</label>
+        <div id="optionListDisplay" style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 5px; margin-top: 5px; border-radius: 5px; background: #fff;">
+            </div>
     </section>
 
     <section class="card">
         <h2>2. Wijn per Ronde Instellen</h2>
         <div class="setup-box">
-            <label>Kies uit lijst OF typ nieuw:</label>
+            <label>Stap A: Kies Druif</label>
             <select id="masterGrapeSelect"></select>
             <input id="wineNameInput" type="text" placeholder="Of typ hier een nieuwe soort...">
             
-            <label>Jaartal</label>
+            <label>Stap B: Jaartal & Info</label>
             <input id="wineYearInput" type="number" placeholder="Bijv. 2022">
             
-            <label>Opmerkingen</label>
-            <textarea id="wineNoteInput" style="width: 100%; box-sizing: border-box; height: 60px; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; font-family: inherit;"></textarea>
+            <label>Stap C: Extra Opmerkingen (optioneel)</label>
+            <textarea id="wineNoteInput" style="width: 100%; box-sizing: border-box; height: 60px; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; font-family: inherit;"></textarea>
             
             <button id="addWineBtn" type="button">Wijn Opslaan voor Ronde</button>
         </div>
-        <div id="wineListDisplay" style="margin-top:15px;"></div>
+
+        <label style="margin-top: 15px;">Ingestelde Wijnrondes:</label>
+        <div id="wineListDisplay">
+            </div>
     </section>
 
     <section class="card highlight">
         <h2>3. Live Besturing</h2>
-        <p>Status: <strong id="quizStatusText">-</strong> | Ronde: <strong id="currentWineNumber">0</strong></p>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+            <p style="font-size: 1.2em; margin: 0;">Status: <strong id="quizStatusText">-</strong></p>
+            <p style="font-size: 2em; margin: 10px 0; color: #5A0F0F;">Ronde: <strong id="currentWineNumber">0</strong></p>
+        </div>
         <div style="display:flex; gap:10px;">
-            <button id="prevWineBtn" type="button" style="background:#6c757d;">⬅️ Vorige</button>
-            <button id="nextWineBtn" type="button" style="background:#28a745;">Volgende Vrijgeven ➡️</button>
+            <button id="prevWineBtn" type="button" style="background:#6c757d; flex: 1;">⬅️ Vorige</button>
+            <button id="nextWineBtn" type="button" style="background:#28a745; flex: 2; font-weight: bold;">Volgende Vrijgeven ➡️</button>
         </div>
     </section>
 
     <section class="card">
         <h2>4. Resultaten</h2>
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
             <button id="tempScoreBtn" type="button" style="background:#17a2b8;">Tussenstand</button>
             <button id="calcBtn" type="button" style="background:#5A0F0F;">🏁 Quiz Afsluiten</button>
         </div>
-        <div id="scoreTable"></div>
+        <div id="scoreTable">
+            </div>
     </section>
 
     <section class="card danger-zone" style="background: #fff5f5; border: 1px solid #feb2b2; margin-top: 30px;">
-        <h2>⚠️ Data Beheer (Reset)</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <button id="resetAnswersBtn" type="button">Wis Antwoorden</button>
-            <button id="resetParticipantsBtn" type="button">Wis Deelnemers</button>
-            <button id="resetWinesBtn" type="button">Wis Wijnrondes</button>
-            <button id="resetOptionsBtn" type="button">Wis Dropdownlijst</button>
+        <h2 style="color: #c53030;">⚠️ Data Beheer (Reset)</h2>
+        <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">Let op: acties kunnen niet ongedaan worden gemaakt.</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button id="resetAnswersBtn" type="button" style="font-size: 0.9em; padding: 10px; background: #e53e3e;">Wis Antwoorden</button>
+            <button id="resetParticipantsBtn" type="button" style="font-size: 0.9em; padding: 10px; background: #e53e3e;">Wis Deelnemers</button>
+            <button id="resetWinesBtn" type="button" style="font-size: 0.9em; padding: 10px; background: #e53e3e;">Wis Wijnrondes</button>
+            <button id="resetOptionsBtn" type="button" style="font-size: 0.9em; padding: 10px; background: #e53e3e;">Wis Dropdownlijst</button>
         </div>
     </section>
 </div>
