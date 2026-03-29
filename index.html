@@ -2,50 +2,31 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rodewijn Quiz</title>
+    <title>Wijnquiz – Deelnemer</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="ui-theme.css">
-    <script type="module" src="firebase.js"></script>
-    <script type="module" src="app.js"></script>
 </head>
 <body>
+
 <div class="container">
-    <h1 class="title">🍷 Rodewijn Quiz</h1>
+    <h1 class="title">Wijnquiz – Deelnemer</h1>
 
-    <div id="loginScreen">
-        <h2>Inloggen</h2>
-        <input id="nameInput" type="text" placeholder="Jouw naam">
-        <button id="startBtn">Start Quiz</button>
-    </div>
+    <h2>Huidige Ronde</h2>
+    <p>Ronde: <span id="currentWineNumber">0</span></p>
+    <p>Status: <span id="quizStatusText">wachten</span></p>
 
-    <div id="quizScreen" class="hidden">
-        <h2 id="wineTitle">Wachten...</h2>
-        <label>Kies soort</label>
+    <div id="wineInfo" class="hidden">
+        <h2>Jouw keuze</h2>
+        <label for="grapeSelect">Kies druif:</label>
         <select id="grapeSelect"></select>
-        <label>Of typ zelf</label>
-        <input id="customGrapeInput" type="text" placeholder="Eigen invoer...">
-        <label>Jaartal</label>
-        <input id="yearInput" type="number" placeholder="Jaartal">
-        <label>Persoonlijke Smaak (0–10)</label>
-        <input id="scoreInput" type="range" min="0" max="10" value="5">
-        <div id="scoreValueDisplay" style="text-align:center; font-weight:bold; font-size:1.5em; color:#5A0F0F;">5</div>
-        <button id="submitBtn">Indienen</button>
+
+        <button id="submitChoiceBtn">Bevestigen</button>
     </div>
 
-    <div id="waiting" class="hidden">
-        <div class="card" style="background:#f9f9f9; border:2px solid #5A0F0F; padding:20px; border-radius:10px;">
-            <h3>Antwoord verzonden!</h3>
-            <div id="submissionSummary" style="line-height:1.6;"></div>
-            <p><em>Wachten op de volgende wijn...</em></p>
-        </div>
-    </div>
-
-    <div id="resultScreen" class="hidden">
-        <h2>Resultaten</h2>
-        <div id="resultBox"></div>
-        <p id="finalMsg" class="hidden">De quiz is afgelopen!</p>
-    </div>
+    <h2>Score</h2>
+    <p id="scoreValue">0</p>
 </div>
+
+<script type="module" src="app.js"></script>
 </body>
 </html>

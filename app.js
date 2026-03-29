@@ -1,84 +1,52 @@
-import { db } from "./firebase.js";
-import { ref, set, update, onValue, get } 
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { db, ref, onValue, update, get } from "./firebase.js";
 
-const loginScreen = document.getElementById("loginScreen"), quizScreen = document.getElementById("quizScreen"),
-      resultScreen = document.getElementById("resultScreen"), waiting = document.getElementById("waiting"),
-      scoreInput = document.getElementById("scoreInput"), scoreValueDisplay = document.getElementById("scoreValueDisplay");
+document.addEventListener("DOMContentLoaded", () => {
 
-let userName = "", currentWine = 0;
+    const grapeSelect = document.getElementById("grapeSelect");
+    const submitChoiceBtn = document.getElementById("submitChoiceBtn");
+    const scoreValue = document.getElementById("scoreValue");
+    const wineInfo = document.getElementById("wineInfo");
 
-scoreInput.addEventListener('input', () => { scoreValueDisplay.textContent = scoreInput.value; });
+    // Realtime: druivenlijst
+    onValue(ref(db, "dropdownOptions"), snap => {
+        const data = snap.val() || {};
+        const sorted = Object.values(data).sort((a, b) => a.name.localeCompare(b.name));
 
-// Dropdown vullen
-onValue(ref(db, "dropdownOptions"), snap => {
-    const sorted = Object.values(snap.val() || {}).sort((a,b) => a.name.localeCompare(b.name));
-    let html = '<option value="">-- Maak een keuze --</option>';
-    sorted.forEach(opt => html += `<option value="${opt.name}">${opt.name}</option>`);
-    document.getElementById("grapeSelect").innerHTML = html;
-});
+        grapeSelect.innerHTML =
+            '<option value="">-- Kies --</option>' +
+            sorted.map(o => `<option value="${o.name}">${o.name}</option>`).join("");
+    });
 
-document.getElementById("startBtn").onclick = () => {
-    userName = document.getElementById("nameInput").value.trim();
-    if (!userName) return alert("Naam verplicht");
-    update(ref(db, `participants/${userName}`), { ingelogd: true });
-    loginScreen.classList.add("hidden"); quizScreen.classList.remove("hidden");
-};
+    // Realtime: quiz status
+    onValue(ref(db, "settings"), snap => {
+        const s = snap.val() || {};
+        document.getElementById("currentWineNumber").textContent = s.currentWine || 0;
+        document.getElementById("quizStatusText").textContent = s.status || "wachten";
 
-onValue(ref(db, "settings"), async (snap) => {
-    const s = snap.val() || {};
-    const newWine = s.currentWine || 0;
-    if (s.status === "finished") {
-        await toonOverzicht(newWine, true);
-    } else if (newWine !== currentWine && newWine > 0) {
-        if (currentWine !== 0 && newWine > currentWine) {
-            await toonOverzicht(newWine - 1, false);
-            setTimeout(() => resetRonde(newWine), 8000);
-        } else {
-            resetRonde(newWine);
+        wineInfo.classList.toggle("hidden", s.status !== "active");
+    });
+
+    // Score realtime
+    onValue(ref(db, "scores/user1"), snap => {
+        scoreValue.textContent = snap.exists() ? snap.val() : 0;
+    });
+
+    // Keuze doorgeven
+    submitChoiceBtn.addEventListener("click", async () => {
+        const choice = grapeSelect.value;
+        if (!choice) {
+            alert("Kies een druif.");
+            return;
         }
-        currentWine = newWine;
-    }
+
+        const settingsSnap = await get(ref(db, "settings"));
+        const s = settingsSnap.val();
+        const round = s.currentWine;
+
+        await update(ref(db, `answers/user1`), {
+            [round]: choice
+        });
+
+        alert("Keuze opgeslagen.");
+    });
 });
-
-async function toonOverzicht(tot, einde) {
-    const wines = (await get(ref(db, "wines"))).val() || {};
-    let html = "<h3>Jouw resultaten:</h3>";
-    for (let i = 1; i <= tot; i++) {
-        const correct = wines[i], gokSnap = await get(ref(db, `answers/${i}/${userName}`));
-        const gok = gokSnap.val() || { grape: "Geen", year: 0, score: 0 };
-        let pts = (gok.grape.toLowerCase() === (correct.grape||"").toLowerCase()) ? 5 : 0;
-        if (pts === 5 && Math.abs(gok.year - correct.year) <= 1) pts += 2;
-        html += `<div style="border-bottom:1px dotted #ccc; padding:8px;"><strong>Ronde ${i}:</strong> ${correct.grape} (${correct.year})<br>Jouw gok: ${gok.grape} (${gok.year}) | Punten: ${pts}</div>`;
-    }
-    document.getElementById("resultBox").innerHTML = html;
-    quizScreen.classList.add("hidden"); waiting.classList.add("hidden"); resultScreen.classList.remove("hidden");
-    if (einde) document.getElementById("finalMsg").classList.remove("hidden");
-}
-
-function resetRonde(nr) {
-    document.getElementById("wineTitle").textContent = `Wijn ${nr}`;
-    document.getElementById("yearInput").value = "";
-    document.getElementById("customGrapeInput").value = "";
-    document.getElementById("grapeSelect").value = "";
-    scoreInput.value = 5; scoreValueDisplay.textContent = 5;
-    resultScreen.classList.add("hidden"); waiting.classList.add("hidden"); quizScreen.classList.remove("hidden");
-}
-
-// Fix 4: Bevestiging met jaartal
-document.getElementById("submitBtn").onclick = () => {
-    const grape = document.getElementById("customGrapeInput").value.trim() || document.getElementById("grapeSelect").value;
-    const year = parseInt(document.getElementById("yearInput").value) || 0;
-    const score = parseInt(scoreInput.value);
-    if (!grape) return alert("Selecteer een wijn");
-
-    set(ref(db, `answers/${currentWine}/${userName}`), { grape, year, score });
-
-    document.getElementById("submissionSummary").innerHTML = `
-        <p><strong>Wijn ronde:</strong> ${currentWine}</p>
-        <p><strong>Ingegeven wijn:</strong> ${grape}</p>
-        <p><strong>Ingegeven jaartal:</strong> ${year > 0 ? year : 'Niet ingevuld'}</p>
-        <p><strong>Jouw smaakscore:</strong> ${score}/10</p>`;
-    
-    quizScreen.classList.add("hidden"); waiting.classList.remove("hidden");
-};
